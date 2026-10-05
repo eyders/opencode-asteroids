@@ -7,7 +7,8 @@ const { test } = require('node:test');
 const { createContext, runInContext } = require('node:vm');
 
 const scripts = ['speedPowerUp.js', 'speedPowerUpView.js',
-  'shootingStar.js', 'shootingStarView.js', 'game.js'].map(filename => ({
+  'shootingStar.js', 'shootingStarView.js', 'shipSkins.js', 'shipSkinView.js',
+  'shipShield.js', 'shipShieldView.js', 'game.js'].map(filename => ({
   filename, source: readFileSync(join(__dirname, '..', filename), 'utf8'),
 }));
 
@@ -19,7 +20,10 @@ function createGame() {
     return seed / 2 ** 32;
   };
   const context = createContext({ Math: math,
-    document: { getElementById: () => ({ getContext: () => ({}) }) },
+    document: {
+      getElementById: () => ({ getContext: () => ({}), appendChild() {}, addEventListener() {} }),
+      createElement: () => ({}),
+    },
     window: { addEventListener() {} }, requestAnimationFrame() {},
   });
   scripts.forEach(({ source, filename }) => runInContext(source, context, { filename }));

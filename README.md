@@ -29,6 +29,7 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
+| `S`       | Activar escudo |
 
 ## Puntuación
 
@@ -44,6 +45,8 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
+- **Skins:** el selector situado sobre el juego permite elegir Clásica, Neón o Caza. Cambia la silueta, el color, la llama y los iconos de vidas, sin alterar velocidad, disparos ni colisiones. La selección se conserva al reaparecer, cambiar de nivel y reiniciar la partida; recargar la página restaura Clásica. Con el selector enfocado, las flechas cambian la opción: pulsa Tab para volver al juego.
+- **Escudo:** pulsa S para protegerte de colisiones con asteroides y estrellas fugaces durante 3 segundos. Se puede volver a activar 8 segundos después de la activación anterior; mantener S pulsada no lo reactiva. Un halo azul y el HUD muestran su estado. No destruye enemigos ni da puntos, y permite seguir moviéndose y disparando. Los temporizadores avanzan solo durante el juego activo; morir, reaparecer, cambiar de nivel o reiniciar lo desactiva y lo deja listo. Las pulsaciones durante la muerte o el game over se descartan.
 - **Velocidad:** un rayo aparece en una posición aleatoria cada 15–25 segundos y desaparece tras 10 segundos si no se recoge. Al tocarlo, la nave se mueve al doble de velocidad durante 5 segundos, con contador en pantalla. Otro rayo renueva el efecto sin acumularlo; morir, cambiar de nivel o reiniciar lo elimina. Los temporizadores avanzan durante el juego activo.
 - **Estrella fugaz:** aparece lejos de la nave cada 12–18 segundos de juego activo (unos 15 segundos), con un máximo de una en pantalla. Se mueve a 250 px/s, envuelve los bordes y desaparece tras 6 segundos, desvaneciéndose con una estela dorada. Destruirla da 200 puntos y no genera fragmentos; su desaparición natural no da puntos. Daña la nave salvo durante la invencibilidad. Su presencia no impide completar el nivel: cambiar de nivel elimina la estrella activa pero conserva el contador de aparición. Durante la reaparición sigue moviéndose y envejeciendo, sin avanzar el contador de nuevas apariciones; reiniciar la partida restablece ambos.
 
@@ -52,7 +55,7 @@ Luego visita `http://localhost:3000`.
 Las pruebas de lógica e integración se ejecutan con Node.js, sin instalar dependencias:
 
 ```bash
-node --test tests/shootingStar.test.js
+node --test tests/*.test.js
 ```
 
 Abre `index.html` para comprobar también la estela dorada, el desvanecimiento y los controles del juego.

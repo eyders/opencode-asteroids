@@ -5,26 +5,69 @@
   <title>Asteroids</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
+    :root {
+      --page-background: #000;
+      --text-color: #fff;
+      --border-color: #666;
+      --canvas-border: #222;
+      --focus-color: #66f7ff;
+      --control-background: #181818;
+      --control-spacing: 12px;
+      --control-padding: 6px;
+      --body-font: 15px monospace;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #000;
+      background: var(--page-background);
+      color: var(--text-color);
+      font: var(--body-font);
       display: flex;
+      flex-direction: column;
+      gap: var(--control-spacing);
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+    }
+    .skin-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: var(--control-spacing);
+    }
+    select {
+      background: var(--control-background);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: var(--control-padding);
+      font: inherit;
+      max-width: 100%;
+    }
+    :focus-visible {
+      outline: 2px solid var(--focus-color);
+      outline-offset: var(--control-padding);
     }
     canvas {
       display: block;
-      border: 1px solid #222;
+      border: 1px solid var(--canvas-border);
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas" width="800" height="600"></canvas>
+  <div class="skin-controls">
+    <label for="ship-skin">Apariencia de la nave:</label>
+    <select id="ship-skin" aria-describedby="skin-help"></select>
+    <span id="skin-help">Tab para volver al juego</span>
+  </div>
+  <canvas id="canvas" width="800" height="600" tabindex="0" aria-label="Asteroids: flechas para mover la nave, espacio para disparar y S para activar el escudo"></canvas>
   <script src="speedPowerUp.js"></script>
   <script src="speedPowerUpView.js"></script>
   <script src="shootingStar.js"></script>
   <script src="shootingStarView.js"></script>
+  <script src="shipSkins.js"></script>
+  <script src="shipSkinView.js"></script>
+  <script src="shipShield.js"></script>
+  <script src="shipShieldView.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

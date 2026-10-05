@@ -10,12 +10,20 @@ const keys = {};
 const justPressed = {};
 
 window.addEventListener('keydown', e => {
+  if (e.target.closest('select, button, input, textarea')) return;
   justPressed[e.code] = !keys[e.code];
   keys[e.code] = true;
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code))
     e.preventDefault();
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+const shipSkinSelector = document.getElementById('ship-skin');
+initializeShipSkinSelector(shipSkinSelector, selectShipSkin);
+shipSkinSelector.addEventListener('focus', () => {
+  for (const code of Object.keys(keys)) keys[code] = false;
+  for (const code of Object.keys(justPressed)) justPressed[code] = false;
+});
 
 function pressed(code) {
   const val = justPressed[code];
@@ -133,11 +141,13 @@ class Ship {
     this.invincible    = 3;
     this.shootCooldown = 0;
     this.speedBoostRemaining = 0;
+    this.shield = new ShipShield();
     this.dead          = false;
   }
 
   update(dt) {
     if (this.dead) return;
+    this.shield.update(dt);
     if (this.invincible    > 0) this.invincible    -= dt;
     if (this.shootCooldown > 0) this.shootCooldown -= dt;
 
@@ -180,28 +190,7 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth   = 1.5;
-    ctx.lineJoin    = 'round';
-
-    // Silueta clásica: triángulo con muesca trasera
-    ctx.beginPath();
-    ctx.moveTo( 20,  0);   // nariz
-    ctx.lineTo(-12, -9);   // ala izquierda
-    ctx.lineTo( -7,  0);   // muesca trasera
-    ctx.lineTo(-12,  9);   // ala derecha
-    ctx.closePath();
-    ctx.stroke();
-
-    // Llama del propulsor
-    if (this.thrusting && Math.random() > 0.35) {
-      ctx.beginPath();
-      ctx.moveTo(-8, -4);
-      ctx.lineTo(-8 - rand(6, 14), 0);
-      ctx.lineTo(-8,  4);
-      ctx.strokeStyle = 'rgba(255, 130, 0, 0.85)';
-      ctx.stroke();
-    }
+    drawShipSkin(ctx, getSelectedShipSkinId(), { thrusting: this.thrusting });
 
     ctx.restore();
   }
@@ -291,6 +280,7 @@ function killShip() {
   explode(ship.x, ship.y, 14);
   ship.dead = true;
   ship.speedBoostRemaining = 0;
+  ship.shield.reset();
   lives--;
   if (lives <= 0) {
     state = 'gameover';
@@ -312,6 +302,7 @@ function checkShootingStarBulletCollision() {
 
 // ── Update ────────────────────────────────────────────────────────────────────
 function update(dt) {
+  const shieldPressed = pressed('KeyS');
   if (state === 'gameover') {
     if (pressed('Space')) initGame();
     particles.forEach(p => p.update(dt));
@@ -335,6 +326,7 @@ function update(dt) {
   }
 
   ship.update(dt);
+  if (shieldPressed) ship.shield.activate();
   speedPowerUps.update(dt);
   shootingStars.update(dt, ship);
   bullets.forEach(b => b.update(dt));
@@ -362,7 +354,7 @@ function update(dt) {
   bullets   = bullets.filter(b => !b.dead);
 
   // Nave vs asteroide
-  if (ship.invincible <= 0) {
+  if (canShipTakeCollisionDamage(ship)) {
     for (const a of asteroids) {
       if (dist(ship, a) < ship.radius + a.radius * 0.82) {
         killShip();
@@ -371,7 +363,8 @@ function update(dt) {
     }
   }
 
-  if (state === 'playing' && shootingStars.collidesWithShip(ship)) killShip();
+  if (state === 'playing' && canShipTakeCollisionDamage(ship) &&
+      shootingStars.collidesWithShip(ship)) killShip();
 
   if (state === 'playing' && speedPowerUps.collect(ship)) {
     ship.speedBoostRemaining = SPEED_POWER_UP.duration;
@@ -386,16 +379,10 @@ function drawLifeIcon(x, y) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-Math.PI / 2);
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth   = 1.2;
-  ctx.lineJoin    = 'round';
-  ctx.beginPath();
-  ctx.moveTo( 9,  0);
-  ctx.lineTo(-6, -5);
-  ctx.lineTo(-3,  0);
-  ctx.lineTo(-6,  5);
-  ctx.closePath();
-  ctx.stroke();
+  ctx.scale(SHIP_SKIN_DRAWING.lifeScale, SHIP_SKIN_DRAWING.lifeScale);
+  drawShipSkin(ctx, getSelectedShipSkinId(), {
+    lineWidth: SHIP_SKIN_DRAWING.lifeLineWidth / SHIP_SKIN_DRAWING.lifeScale,
+  });
   ctx.restore();
 }
 
@@ -413,6 +400,7 @@ function drawHUD() {
     drawLifeIcon(W - 16 - i * 22, 18);
 
   drawSpeedPowerUpHUD(ctx, ship.speedBoostRemaining);
+  drawShipShieldHUD(ctx, ship);
 }
 
 function drawOverlay(title, sub) {
@@ -435,6 +423,7 @@ function draw() {
   bullets.forEach(b => b.draw());
   if (state === 'playing') drawSpeedPowerUp(ctx, speedPowerUps.pickup);
   ship.draw();
+  drawShipShield(ctx, ship);
 
   drawHUD();
 
