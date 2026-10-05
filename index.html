@@ -2,25 +2,72 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Asteroids</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
+    :root {
+      --background: #000;
+      --foreground: #fff;
+      --border: #555;
+      --canvas-border: #222;
+      --focus: #67e8f9;
+      --spacing: 12px;
+      --control-padding: 6px;
+      --border-width: 1px;
+      --focus-width: 2px;
+      --font: 15px monospace;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #000;
+      background: var(--background);
+      color: var(--foreground);
+      font: var(--font);
       display: flex;
+      flex-direction: column;
+      gap: var(--spacing);
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: var(--spacing);
     }
     canvas {
       display: block;
-      border: 1px solid #222;
+      border: var(--border-width) solid var(--canvas-border);
+      max-width: 100%;
+    }
+    .skin-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--spacing);
+      max-width: 100%;
+    }
+    select {
+      background: var(--background);
+      color: var(--foreground);
+      font: inherit;
+      padding: var(--control-padding);
+      border: var(--border-width) solid var(--border);
+      max-width: 100%;
+    }
+    select:focus-visible, canvas:focus-visible {
+      outline: var(--focus-width) solid var(--focus);
+      outline-offset: var(--control-padding);
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas" width="800" height="600"></canvas>
+  <div class="skin-controls">
+    <label for="ship-skin">Skin de la nave</label>
+    <select id="ship-skin" aria-describedby="skin-help"></select>
+    <span id="skin-help">Pulsa Tab o haz clic en el juego para pilotar.</span>
+  </div>
+  <canvas id="canvas" width="800" height="600" tabindex="0" aria-label="Juego Asteroids: flechas para pilotar, espacio para disparar"></canvas>
+  <script src="shipSkins.js"></script>
+  <script src="shipSkinStorage.js"></script>
+  <script src="shipSkinView.js"></script>
+  <script src="shipSkinSelector.js"></script>
   <script src="speedPowerUp.js"></script>
   <script src="speedPowerUpView.js"></script>
   <script src="shootingStar.js"></script>

@@ -30,6 +30,12 @@ Luego visita `http://localhost:3000`.
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
 
+## Skins de la nave
+
+El selector sobre el juego permite cambiar entre **Clásica**, **Neón** y **Solar** en cualquier momento. Cambian la silueta, los colores del casco y el propulsor, y los iconos de vidas; no modifican velocidad, colisiones ni disparos. La elección se mantiene al reaparecer, avanzar de nivel y reiniciar.
+
+La preferencia se guarda en el navegador cuando el almacenamiento está disponible; si está bloqueado, la selección funciona durante la sesión. Después de usar el selector, pulsa Tab o haz clic en el canvas para volver a pilotar.
+
 ## Puntuación
 
 | Asteroide     | Puntos |
@@ -52,7 +58,7 @@ Luego visita `http://localhost:3000`.
 Las pruebas de lógica e integración se ejecutan con Node.js, sin instalar dependencias:
 
 ```bash
-node --test tests/shootingStar.test.js
+node --test tests/*.test.js
 ```
 
 Abre `index.html` para comprobar también la estela dorada, el desvanecimiento y los controles del juego.
