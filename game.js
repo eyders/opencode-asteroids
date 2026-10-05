@@ -10,6 +10,7 @@ const keys = {};
 const justPressed = {};
 
 window.addEventListener('keydown', e => {
+  if (e.target && e.target.closest('select, button, input, textarea')) return;
   justPressed[e.code] = !keys[e.code];
   keys[e.code] = true;
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code))
@@ -184,28 +185,9 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth   = 1.5;
-    ctx.lineJoin    = 'round';
-
-    // Silueta clásica: triángulo con muesca trasera
-    ctx.beginPath();
-    ctx.moveTo( 20,  0);   // nariz
-    ctx.lineTo(-12, -9);   // ala izquierda
-    ctx.lineTo( -7,  0);   // muesca trasera
-    ctx.lineTo(-12,  9);   // ala derecha
-    ctx.closePath();
-    ctx.stroke();
-
-    // Llama del propulsor
-    if (this.thrusting && Math.random() > 0.35) {
-      ctx.beginPath();
-      ctx.moveTo(-8, -4);
-      ctx.lineTo(-8 - rand(6, 14), 0);
-      ctx.lineTo(-8,  4);
-      ctx.strokeStyle = 'rgba(255, 130, 0, 0.85)';
-      ctx.stroke();
-    }
+    const skin = getSelectedShipSkin();
+    drawShipSkin(ctx, skin);
+    if (this.thrusting) drawShipSkinFlame(ctx, skin);
 
     ctx.restore();
   }
@@ -398,16 +380,8 @@ function drawLifeIcon(x, y) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-Math.PI / 2);
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth   = 1.2;
-  ctx.lineJoin    = 'round';
-  ctx.beginPath();
-  ctx.moveTo( 9,  0);
-  ctx.lineTo(-6, -5);
-  ctx.lineTo(-3,  0);
-  ctx.lineTo(-6,  5);
-  ctx.closePath();
-  ctx.stroke();
+  ctx.scale(SHIP_SKIN_STYLE.lifeScale, SHIP_SKIN_STYLE.lifeScale);
+  drawShipSkin(ctx, getSelectedShipSkin());
   ctx.restore();
 }
 
