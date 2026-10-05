@@ -132,6 +132,7 @@ class Ship {
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
+    this.speedBoostRemaining = 0;
     this.dead          = false;
   }
 
@@ -155,8 +156,11 @@ class Ship {
 
     this.vx *= DRAG;
     this.vy *= DRAG;
-    this.x = wrap(this.x + this.vx * dt, W);
-    this.y = wrap(this.y + this.vy * dt, H);
+    const boostedTime = Math.min(dt, this.speedBoostRemaining);
+    const movementTime = dt + boostedTime * (SPEED_POWER_UP.multiplier - 1);
+    this.speedBoostRemaining = Math.max(0, this.speedBoostRemaining - dt);
+    this.x = wrap(this.x + this.vx * movementTime, W);
+    this.y = wrap(this.y + this.vy * movementTime, H);
   }
 
   tryShoot() {
@@ -237,6 +241,7 @@ class Particle {
 
 // ── Estado del juego ──────────────────────────────────────────────────────────
 let ship, bullets, asteroids, particles;
+let speedPowerUps;
 let score, lives, level;
 let state;      // 'playing' | 'dead' | 'gameover'
 let deadTimer;
@@ -255,6 +260,7 @@ function spawnAsteroids(count) {
 
 function initGame() {
   ship          = new Ship();
+  speedPowerUps = new SpeedPowerUpSpawner(W, H);
   bullets   = [];
   asteroids = [];
   particles = [];
@@ -270,6 +276,7 @@ function nextLevel() {
   bullets   = [];
   particles = [];
   ship.reset();
+  speedPowerUps.reset();
   spawnAsteroids(3 + level);
 }
 
@@ -280,6 +287,7 @@ function explode(x, y, count = 8) {
 function killShip() {
   explode(ship.x, ship.y, 14);
   ship.dead = true;
+  ship.speedBoostRemaining = 0;
   lives--;
   if (lives <= 0) {
     state = 'gameover';
@@ -313,6 +321,7 @@ function update(dt) {
   }
 
   ship.update(dt);
+  speedPowerUps.update(dt);
   bullets.forEach(b => b.update(dt));
   asteroids.forEach(a => a.update(dt));
   particles.forEach(p => p.update(dt));
@@ -344,6 +353,10 @@ function update(dt) {
         break;
       }
     }
+  }
+
+  if (state === 'playing' && speedPowerUps.collect(ship)) {
+    ship.speedBoostRemaining = SPEED_POWER_UP.duration;
   }
 
   // Nivel completado
@@ -381,6 +394,7 @@ function drawHUD() {
   for (let i = 0; i < lives; i++)
     drawLifeIcon(W - 16 - i * 22, 18);
 
+  drawSpeedPowerUpHUD(ctx, ship.speedBoostRemaining);
 }
 
 function drawOverlay(title, sub) {
@@ -400,6 +414,7 @@ function draw() {
   particles.forEach(p => p.draw());
   asteroids.forEach(a => a.draw());
   bullets.forEach(b => b.draw());
+  if (state === 'playing') drawSpeedPowerUp(ctx, speedPowerUps.pickup);
   ship.draw();
 
   drawHUD();

@@ -9,7 +9,7 @@ Nave espacial en un campo de asteroides con envolvimiento de bordes (el espacio 
 ## Tecnologías
 
 - **HTML5 Canvas** — renderizado 2D
-- **JavaScript (ES6+)** — lógica del juego en un solo archivo `game.js`
+- **JavaScript (ES6+)** — juego en `game.js`, con lógica y dibujo del power-up en archivos separados
 - Sin frameworks, sin bundler, sin dependencias
 
 ## Cómo correr
@@ -43,3 +43,4 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
+- **Velocidad:** un rayo aparece en una posición aleatoria cada 15–25 segundos y desaparece tras 10 segundos si no se recoge. Al tocarlo, la nave se mueve al doble de velocidad durante 5 segundos, con contador en pantalla. Otro rayo renueva el efecto sin acumularlo; morir, cambiar de nivel o reiniciar lo elimina. Los temporizadores avanzan durante el juego activo.
