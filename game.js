@@ -133,6 +133,7 @@ class Ship {
     this.invincible    = 3;
     this.shootCooldown = 0;
     this.speedBoostRemaining = 0;
+    this.tripleShotRemaining = 0;
     this.dead          = false;
   }
 
@@ -140,6 +141,7 @@ class Ship {
     if (this.dead) return;
     if (this.invincible    > 0) this.invincible    -= dt;
     if (this.shootCooldown > 0) this.shootCooldown -= dt;
+    this.tripleShotRemaining = Math.max(0, this.tripleShotRemaining - dt);
 
     const ROT   = 3.5;   // rad/s
     const THRUST = 260;  // px/s²
@@ -169,7 +171,9 @@ class Ship {
     const NOSE = 21;
     const ox = this.x + Math.cos(this.angle) * NOSE;
     const oy = this.y + Math.sin(this.angle) * NOSE;
-    return [new Bullet(ox, oy, this.angle)];
+    const angleOffsets = this.tripleShotRemaining > 0 ? TRIPLE_SHOT_POWER_UP.angleOffsets : [0];
+    return angleOffsets.map(offset =>
+      new Bullet(wrap(ox, W), wrap(oy, H), this.angle + offset));
   }
 
   draw() {
@@ -242,6 +246,7 @@ class Particle {
 // ── Estado del juego ──────────────────────────────────────────────────────────
 let ship, bullets, asteroids, particles;
 let speedPowerUps;
+let tripleShotPowerUps;
 let shootingStars;
 let score, lives, level;
 let state;      // 'playing' | 'dead' | 'gameover'
@@ -262,6 +267,7 @@ function spawnAsteroids(count) {
 function initGame() {
   ship          = new Ship();
   speedPowerUps = new SpeedPowerUpSpawner(W, H);
+  tripleShotPowerUps = new TripleShotPowerUpSpawner(W, H);
   shootingStars = new ShootingStarSpawner(W, H);
   bullets   = [];
   asteroids = [];
@@ -279,6 +285,7 @@ function nextLevel() {
   particles = [];
   ship.reset();
   speedPowerUps.reset();
+  tripleShotPowerUps.reset();
   shootingStars.clear();
   spawnAsteroids(3 + level);
 }
@@ -291,6 +298,7 @@ function killShip() {
   explode(ship.x, ship.y, 14);
   ship.dead = true;
   ship.speedBoostRemaining = 0;
+  ship.tripleShotRemaining = 0;
   lives--;
   if (lives <= 0) {
     state = 'gameover';
@@ -336,6 +344,7 @@ function update(dt) {
 
   ship.update(dt);
   speedPowerUps.update(dt);
+  tripleShotPowerUps.update(dt);
   shootingStars.update(dt, ship);
   bullets.forEach(b => b.update(dt));
   asteroids.forEach(a => a.update(dt));
@@ -376,6 +385,9 @@ function update(dt) {
   if (state === 'playing' && speedPowerUps.collect(ship)) {
     ship.speedBoostRemaining = SPEED_POWER_UP.duration;
   }
+  if (state === 'playing' && tripleShotPowerUps.collect(ship)) {
+    ship.tripleShotRemaining = TRIPLE_SHOT_POWER_UP.duration;
+  }
 
   // Nivel completado
   if (asteroids.length === 0) nextLevel();
@@ -413,6 +425,7 @@ function drawHUD() {
     drawLifeIcon(W - 16 - i * 22, 18);
 
   drawSpeedPowerUpHUD(ctx, ship.speedBoostRemaining);
+  drawTripleShotPowerUpHUD(ctx, ship.tripleShotRemaining);
 }
 
 function drawOverlay(title, sub) {
@@ -434,6 +447,7 @@ function draw() {
   drawShootingStar(ctx, shootingStars.star);
   bullets.forEach(b => b.draw());
   if (state === 'playing') drawSpeedPowerUp(ctx, speedPowerUps.pickup);
+  if (state === 'playing') drawTripleShotPowerUp(ctx, tripleShotPowerUps.pickup);
   ship.draw();
 
   drawHUD();
