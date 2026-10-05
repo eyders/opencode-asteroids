@@ -9,7 +9,7 @@ Nave espacial en un campo de asteroides con envolvimiento de bordes (el espacio 
 ## Tecnologías
 
 - **HTML5 Canvas** — renderizado 2D
-- **JavaScript (ES6+)** — juego en `game.js`, con lógica y dibujo del power-up en archivos separados
+- **JavaScript (ES6+)** — juego en `game.js`, con lógica y dibujo del power-up y la estrella fugaz en archivos separados
 - Sin frameworks, sin bundler, sin dependencias
 
 ## Cómo correr
@@ -32,11 +32,12 @@ Luego visita `http://localhost:3000`.
 
 ## Puntuación
 
-| Asteroide | Puntos |
-| --------- | ------ |
-| Grande    | 20     |
-| Mediano   | 50     |
-| Pequeño   | 100    |
+| Asteroide     | Puntos |
+| ------------- | ------ |
+| Grande        | 20     |
+| Mediano       | 50     |
+| Pequeño       | 100    |
+| Estrella fugaz | 200    |
 
 ## Características
 
@@ -44,3 +45,14 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - **Velocidad:** un rayo aparece en una posición aleatoria cada 15–25 segundos y desaparece tras 10 segundos si no se recoge. Al tocarlo, la nave se mueve al doble de velocidad durante 5 segundos, con contador en pantalla. Otro rayo renueva el efecto sin acumularlo; morir, cambiar de nivel o reiniciar lo elimina. Los temporizadores avanzan durante el juego activo.
+- **Estrella fugaz:** aparece lejos de la nave cada 12–18 segundos de juego activo (unos 15 segundos), con un máximo de una en pantalla. Se mueve a 250 px/s, envuelve los bordes y desaparece tras 6 segundos, desvaneciéndose con una estela dorada. Destruirla da 200 puntos y no genera fragmentos; su desaparición natural no da puntos. Daña la nave salvo durante la invencibilidad. Su presencia no impide completar el nivel: cambiar de nivel elimina la estrella activa pero conserva el contador de aparición. Durante la reaparición sigue moviéndose y envejeciendo, sin avanzar el contador de nuevas apariciones; reiniciar la partida restablece ambos.
+
+## Verificación
+
+Las pruebas de lógica e integración se ejecutan con Node.js, sin instalar dependencias:
+
+```bash
+node --test tests/shootingStar.test.js
+```
+
+Abre `index.html` para comprobar también la estela dorada, el desvanecimiento y los controles del juego.

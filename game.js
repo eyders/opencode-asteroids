@@ -242,6 +242,7 @@ class Particle {
 // ── Estado del juego ──────────────────────────────────────────────────────────
 let ship, bullets, asteroids, particles;
 let speedPowerUps;
+let shootingStars;
 let score, lives, level;
 let state;      // 'playing' | 'dead' | 'gameover'
 let deadTimer;
@@ -261,6 +262,7 @@ function spawnAsteroids(count) {
 function initGame() {
   ship          = new Ship();
   speedPowerUps = new SpeedPowerUpSpawner(W, H);
+  shootingStars = new ShootingStarSpawner(W, H);
   bullets   = [];
   asteroids = [];
   particles = [];
@@ -277,6 +279,7 @@ function nextLevel() {
   particles = [];
   ship.reset();
   speedPowerUps.reset();
+  shootingStars.clear();
   spawnAsteroids(3 + level);
 }
 
@@ -297,6 +300,16 @@ function killShip() {
   }
 }
 
+function checkShootingStarBulletCollision() {
+  const bullet = shootingStars.findBulletHit(bullets);
+  if (!bullet) return;
+  const star = shootingStars.star;
+  bullet.dead = true;
+  score += SHOOTING_STAR.points;
+  explode(star.x, star.y, SHOOTING_STAR.explosionParticles);
+  shootingStars.clear();
+}
+
 // ── Update ────────────────────────────────────────────────────────────────────
 function update(dt) {
   if (state === 'gameover') {
@@ -311,6 +324,7 @@ function update(dt) {
     particles.forEach(p => p.update(dt));
     particles = particles.filter(p => !p.dead);
     asteroids.forEach(a => a.update(dt));
+    shootingStars.update(dt, ship, false);
     if (deadTimer <= 0) { state = 'playing'; ship.reset(); }
     return;
   }
@@ -322,6 +336,7 @@ function update(dt) {
 
   ship.update(dt);
   speedPowerUps.update(dt);
+  shootingStars.update(dt, ship);
   bullets.forEach(b => b.update(dt));
   asteroids.forEach(a => a.update(dt));
   particles.forEach(p => p.update(dt));
@@ -343,6 +358,7 @@ function update(dt) {
     }
   }
   asteroids = asteroids.filter(a => !a.dead).concat(newAsteroids);
+  checkShootingStarBulletCollision();
   bullets   = bullets.filter(b => !b.dead);
 
   // Nave vs asteroide
@@ -354,6 +370,8 @@ function update(dt) {
       }
     }
   }
+
+  if (state === 'playing' && shootingStars.collidesWithShip(ship)) killShip();
 
   if (state === 'playing' && speedPowerUps.collect(ship)) {
     ship.speedBoostRemaining = SPEED_POWER_UP.duration;
@@ -413,6 +431,7 @@ function draw() {
 
   particles.forEach(p => p.draw());
   asteroids.forEach(a => a.draw());
+  drawShootingStar(ctx, shootingStars.star);
   bullets.forEach(b => b.draw());
   if (state === 'playing') drawSpeedPowerUp(ctx, speedPowerUps.pickup);
   ship.draw();
