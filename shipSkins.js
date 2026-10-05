@@ -16,6 +16,13 @@ const SHIP_SKINS = Object.freeze([
     flameColor: '#fb923c',
     vertices: Object.freeze([[20, 0], [0, -8], [-12, -9], [-8, 0], [-12, 9], [0, 8]].map(Object.freeze)),
   }),
+  Object.freeze({
+    id: 'fighter', name: 'Caza', color: '#ffd966', fill: null,
+    flameColor: '#ff9b66',
+    vertices: Object.freeze([[20, 0], [2, -5], [-12, -12], [-9, 0], [-12, 12], [2, 5]].map(Object.freeze)),
+    details: Object.freeze([[[12, 0], [-3, 0]], [[-6, -8], [-6, 8]]]
+      .map(path => Object.freeze(path.map(Object.freeze)))),
+  }),
 ]);
 
 let selectedShipSkin = SHIP_SKINS[0];

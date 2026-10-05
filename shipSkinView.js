@@ -22,6 +22,14 @@ function drawShipSkin(context, skin) {
     context.fill();
   }
   context.stroke();
+  (skin.details || []).forEach(vertices => {
+    context.beginPath();
+    vertices.forEach(([x, y], index) => {
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.stroke();
+  });
 }
 
 function drawShipSkinFlame(context, skin) {

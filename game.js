@@ -18,6 +18,12 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
 
+const shipSkinSelector = document.getElementById('ship-skin');
+shipSkinSelector.addEventListener('focus', () => {
+  for (const code of Object.keys(keys)) keys[code] = false;
+  for (const code of Object.keys(justPressed)) justPressed[code] = false;
+});
+
 function pressed(code) {
   const val = justPressed[code];
   justPressed[code] = false;
@@ -135,11 +141,13 @@ class Ship {
     this.shootCooldown = 0;
     this.speedBoostRemaining = 0;
     this.tripleShotRemaining = 0;
+    this.shield = new ShipShield();
     this.dead          = false;
   }
 
   update(dt) {
     if (this.dead) return;
+    this.shield.update(dt);
     if (this.invincible    > 0) this.invincible    -= dt;
     if (this.shootCooldown > 0) this.shootCooldown -= dt;
     this.tripleShotRemaining = Math.max(0, this.tripleShotRemaining - dt);
@@ -281,6 +289,7 @@ function killShip() {
   ship.dead = true;
   ship.speedBoostRemaining = 0;
   ship.tripleShotRemaining = 0;
+  ship.shield.reset();
   lives--;
   if (lives <= 0) {
     state = 'gameover';
@@ -302,6 +311,7 @@ function checkShootingStarBulletCollision() {
 
 // ── Update ────────────────────────────────────────────────────────────────────
 function update(dt) {
+  const shieldPressed = pressed('KeyS');
   if (state === 'gameover') {
     if (pressed('Space')) initGame();
     particles.forEach(p => p.update(dt));
@@ -325,6 +335,7 @@ function update(dt) {
   }
 
   ship.update(dt);
+  if (shieldPressed) ship.shield.activate();
   speedPowerUps.update(dt);
   tripleShotPowerUps.update(dt);
   shootingStars.update(dt, ship);
@@ -353,7 +364,7 @@ function update(dt) {
   bullets   = bullets.filter(b => !b.dead);
 
   // Nave vs asteroide
-  if (ship.invincible <= 0) {
+  if (canShipTakeCollisionDamage(ship)) {
     for (const a of asteroids) {
       if (dist(ship, a) < ship.radius + a.radius * 0.82) {
         killShip();
@@ -362,7 +373,8 @@ function update(dt) {
     }
   }
 
-  if (state === 'playing' && shootingStars.collidesWithShip(ship)) killShip();
+  if (state === 'playing' && canShipTakeCollisionDamage(ship) &&
+      shootingStars.collidesWithShip(ship)) killShip();
 
   if (state === 'playing' && speedPowerUps.collect(ship)) {
     ship.speedBoostRemaining = SPEED_POWER_UP.duration;
@@ -400,6 +412,7 @@ function drawHUD() {
 
   drawSpeedPowerUpHUD(ctx, ship.speedBoostRemaining);
   drawTripleShotPowerUpHUD(ctx, ship.tripleShotRemaining);
+  drawShipShieldHUD(ctx, ship);
 }
 
 function drawOverlay(title, sub) {
@@ -423,6 +436,7 @@ function draw() {
   if (state === 'playing') drawSpeedPowerUp(ctx, speedPowerUps.pickup);
   if (state === 'playing') drawTripleShotPowerUp(ctx, tripleShotPowerUps.pickup);
   ship.draw();
+  drawShipShield(ctx, ship);
 
   drawHUD();
 

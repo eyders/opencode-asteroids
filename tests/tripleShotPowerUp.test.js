@@ -8,10 +8,14 @@ const { createContext, runInContext } = require('node:vm');
 
 function createGame() {
   const context = createContext({
-    document: { getElementById: () => ({ getContext: () => ({}) }) },
-    window: { addEventListener() {} }, requestAnimationFrame() {},
+    document: {
+      getElementById: () => ({ getContext: () => ({}), appendChild() {}, addEventListener() {} }),
+      createElement: () => ({}),
+    },
+    window: { addEventListener() {}, localStorage: { getItem: () => null } }, requestAnimationFrame() {},
   });
-  const scripts = ['speedPowerUp.js', 'speedPowerUpView.js',
+  const scripts = ['shipSkins.js', 'shipSkinStorage.js', 'shipSkinView.js', 'shipSkinSelector.js',
+    'shipShield.js', 'shipShieldView.js', 'speedPowerUp.js', 'speedPowerUpView.js',
     'tripleShotPowerUp.js', 'tripleShotPowerUpView.js',
     'shootingStar.js', 'shootingStarView.js', 'game.js'];
   scripts.forEach(filename => runInContext(
